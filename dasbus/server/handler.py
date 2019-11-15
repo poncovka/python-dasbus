@@ -26,7 +26,7 @@ from dasbus.signal import Signal
 from dasbus.error import GLibErrorHandler
 from dasbus.server.interface import get_xml
 from dasbus.specification import DBusSpecification, DBusSpecificationError
-from dasbus.typing import get_variant
+from dasbus.typing import get_variant, unwrap_variant
 
 import gi
 gi.require_version("Gio", "2.0")
@@ -366,8 +366,15 @@ class ServerObjectHandler(AbstractServerObjectHandler):
         """
         try:
             # Handle the method call.
-            member = self._find_member_spec(interface_name, method_name)
-            result = self._handle_call(interface_name, method_name, *parameters.unpack())
+            member = self._find_member_spec(
+                interface_name,
+                method_name
+            )
+            result = self._handle_call(
+                interface_name,
+                method_name,
+                *unwrap_variant(parameters)
+            )
         except Exception as error:  # pylint: disable=broad-except
             # Log the error.
             log.warning(
@@ -413,7 +420,7 @@ class ServerObjectHandler(AbstractServerObjectHandler):
 
         :param interface_name: an interface name
         :param property_name: a property name
-        :return: a property value
+        :return: a variant with a property value
         """
         member = self._find_member_spec(interface_name, property_name)
 
@@ -430,8 +437,7 @@ class ServerObjectHandler(AbstractServerObjectHandler):
 
         :param interface_name: an interface name
         :param property_name: a property name
-        :param property_value: a property value
-        :return:
+        :param property_value: a variant with a property value
         """
         member = self._find_member_spec(interface_name, property_name)
 
@@ -440,7 +446,7 @@ class ServerObjectHandler(AbstractServerObjectHandler):
                 interface_name, property_name
             ))
 
-        setattr(self._object, property_name, property_value)
+        setattr(self._object, property_name, unwrap_variant(property_value))
 
     def _find_all_properties(self, interface_name):
         """Find all properties of the given interface.

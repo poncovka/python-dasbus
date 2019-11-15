@@ -83,7 +83,7 @@ class GLibErrorHandler(object):
     @classmethod
     def handle_client_error(cls, client, e):
         """Handle a remote DBus error on the client side."""
-        raise cls._get_exception(e)
+        raise cls._get_exception(e) from None
 
     @classmethod
     def _get_exception(cls, e):
