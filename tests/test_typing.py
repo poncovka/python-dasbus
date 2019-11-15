@@ -205,6 +205,7 @@ class DBusTypingVariantTests(unittest.TestCase):
         self.assertTrue(isinstance(v1, Variant))
         self.assertEqual(v1.format_string, expected_string)  # pylint: disable=no-member
         self.assertEqual(v1.unpack(), value)
+        self.assertEqual(unwrap_variant(v1), value)
 
         v2 = Variant(expected_string, value)
         self.assertTrue(v2.equal(v1))
@@ -271,6 +272,15 @@ class DBusTypingVariantTests(unittest.TestCase):
         self.assertEqual(get_native(tuple(variants)), tuple(values))
         self.assertEqual(get_native(list(variants)), list(values))
         self.assertEqual(get_native(dict(enumerate(variants))), dict(enumerate(values)))
+
+        variant = get_variant(Tuple[Variant, Variant, Variant, Variant], tuple(variants))
+        self.assertEqual(unwrap_variant(variant), tuple(variants))
+
+        variant = get_variant(List[Variant], list(variants))
+        self.assertEqual(unwrap_variant(variant), list(variants))
+
+        variant = get_variant(Dict[Int, Variant], dict(enumerate(variants)))
+        self.assertEqual(unwrap_variant(variant), dict(enumerate(variants)))
 
     def test_basic_native(self):
         """Test get_native with basic variants."""
