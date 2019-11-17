@@ -22,15 +22,16 @@ from abc import ABC, abstractmethod
 from functools import partial
 
 from dasbus.client.property import PropertyProxy
+from dasbus.error import register
 from dasbus.signal import Signal
 from dasbus.constants import DBUS_FLAG_NONE
-from dasbus.error import GLibErrorHandler
 from dasbus.specification import DBusSpecification
 from dasbus.typing import *  # pylint: disable=wildcard-import
 
 import gi
+gi.require_version("Gio", "2.0")
 gi.require_version("GLib", "2.0")
-from gi.repository import GLib
+from gi.repository import Gio, GLib
 
 __all__ = ["GLibClient", "AbstractClientObjectHandler", "ClientObjectHandler"]
 
@@ -120,6 +121,39 @@ class GLibClient(object):
     def _unsubscribe_signal(cls, connection, subscription_id):
         """Unsubscribe from a signal."""
         connection.signal_unsubscribe(subscription_id)
+
+    @classmethod
+    def is_remote_error(cls, error):
+        """Is it a remote DBus error?"""
+        return isinstance(error, GLib.Error) \
+            and Gio.DBusError.is_remote_error(error)
+
+    @classmethod
+    def get_remote_error_name(cls, error):
+        """Get a DBus name of the remote DBus error."""
+        return Gio.DBusError.get_remote_error(error)
+
+    @classmethod
+    def get_remote_error_message(cls, error):
+        """Get a message of the remote DBus error."""
+        message = error.message
+        name = cls.get_remote_error_name(error)
+        prefix = "{}:{}: ".format("GDBus.Error", name)
+
+        if message.startswith(prefix):
+            return message[len(prefix):]
+
+        return message
+
+    @classmethod
+    def get_remote_error_code(cls, error):
+        """Get an error code of the remote DBus error."""
+        return error.code
+
+    @classmethod
+    def get_remote_error_domain(cls, error):
+        """Get a domain of the remote DBus error."""
+        return error.domain
 
 
 class AbstractClientObjectHandler(ABC):
@@ -250,10 +284,10 @@ class AbstractClientObjectHandler(ABC):
 class ClientObjectHandler(AbstractClientObjectHandler):
     """The client handler of a DBus object."""
 
-    __slots__ = ["_client", "_signal_factory", "_error_handler", "_subscriptions"]
+    __slots__ = ["_client", "_signal_factory", "_error_register", "_subscriptions"]
 
     def __init__(self, message_bus, service_name, object_path, client=GLibClient,
-                 signal_factory=Signal, error_handler=GLibErrorHandler):
+                 signal_factory=Signal, error_register=register):
         """Create a new handler.
 
         :param message_bus: a message bus
@@ -264,7 +298,7 @@ class ClientObjectHandler(AbstractClientObjectHandler):
         super().__init__(message_bus, service_name, object_path)
         self._client = client
         self._signal_factory = signal_factory
-        self._error_handler = error_handler
+        self._error_register = error_register
         self._subscriptions = []
 
     def _get_specification(self):
@@ -415,26 +449,56 @@ class ClientObjectHandler(AbstractClientObjectHandler):
         try:
             result = call(*args, **kwargs)
         except Exception as error:  # pylint: disable=broad-except
-            # Process the error
-            return self._error_handler.handle_client_error(
-                self._client,
-                error
-            )
+            return self._handle_method_error(error)
         else:
-            # Process the result.
-            # Unpack a variant tuple.
-            values = unwrap_variant(result)
+            return self._handle_method_result(result)
 
-            # Return None if there are no values.
-            if not values:
-                return None
+    def _handle_method_error(self, error):
+        """Handle an error of a DBus call.
 
-            # Return one value.
-            if len(values) == 1:
-                return values[0]
+        :param error: an exception raised during the call
+        """
+        # Re-raise if it is not a remote DBus error.
+        if not self._client.is_remote_error(error):
+            raise error
 
-            # Return multiple values.
-            return values
+        name = self._client.get_remote_error_name(error)
+        cls = self._error_register.get_exception_class(name)
+
+        # Re-raise if we cannot match it to an exception class.
+        if not cls:
+            raise error from None
+
+        message = self._client.get_remote_error_message(error)
+        code = self._client.get_remote_error_code(error)
+        domain = self._client.get_remote_error_domain(error)
+
+        exception = cls(message)
+        exception.dbus_name = name
+        exception.dbus_domain = domain
+        exception.dbus_code = code
+
+        # Raise a new instance of the exception class.
+        raise exception from None
+
+    def _handle_method_result(self, result):
+        """Handle a result of a DBus call.
+
+        :param result: a value returned by the call
+        """
+        # Unpack a variant tuple.
+        values = unwrap_variant(result)
+
+        # Return None if there are no values.
+        if not values:
+            return None
+
+        # Return one value.
+        if len(values) == 1:
+            return values[0]
+
+        # Return multiple values.
+        return values
 
     def disconnect_members(self):
         """Disconnect members of the DBus object."""

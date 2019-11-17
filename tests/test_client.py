@@ -124,7 +124,7 @@ class DBusClientTestCase(unittest.TestCase):
             self.handler.specification.members
         )
 
-    @patch("dasbus.error.GLibErrorHandler.register", new_callable=ErrorRegister)
+    @patch("dasbus.error.register", new_callable=ErrorRegister)
     def test_method(self, register):
         """Test the method proxy."""
         self._create_proxy("""
@@ -232,7 +232,7 @@ class DBusClientTestCase(unittest.TestCase):
 
         self.connection.call_sync.reset_mock()
 
-    @patch("dasbus.error.GLibErrorHandler.register", new_callable=ErrorRegister)
+    @patch("dasbus.error.register", new_callable=ErrorRegister)
     def test_async_method(self, register):
         """Test asynchronous calls of a method proxy."""
         self._create_proxy("""

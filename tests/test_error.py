@@ -19,7 +19,7 @@
 import unittest
 from unittest.mock import Mock, patch
 
-from dasbus.error import ErrorRegister, GLibErrorHandler
+from dasbus.error import ErrorRegister
 from dasbus.client.handler import GLibClient
 from dasbus.server.handler import GLibServer
 
