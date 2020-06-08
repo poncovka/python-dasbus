@@ -563,3 +563,69 @@ class DBusClientTestCase(unittest.TestCase):
             GLibClient.get_remote_error_message(error),
             "My message."
         )
+
+    def test_priorities(self):
+        """Test priority of the standard interfaces."""
+        self._create_proxy("""
+        <node>
+            <interface name="Interface.A">
+                <method name="Introspect" />
+            </interface>
+        </node>
+        """)
+
+        self._set_reply(self.NO_REPLY)
+        self.assertEqual(self.proxy.Introspect(), None)
+        self._check_call("Interface.A", "Introspect")
+
+        self._create_proxy("""
+        <node>
+            <interface name="Interface.A">
+                <method name="Introspect" />
+            </interface>
+            <interface name="Interface.B">
+                <method name="Introspect" />
+            </interface>
+            <interface name="Interface.C">
+                <method name="Introspect" />
+            </interface>
+        </node>
+        """)
+
+        self._set_reply(self.NO_REPLY)
+        self.assertEqual(self.proxy.Introspect(), None)
+        self._check_call("Interface.A", "Introspect")
+
+        self._create_proxy("""
+        <node>
+            <interface name="org.freedesktop.DBus.Introspectable">
+                <method name="Introspect">
+                    <arg type="s" name="xml_data" direction="out"/>
+                </method>
+            </interface>
+            <interface name="Interface.A">
+                <method name="Introspect" />
+            </interface>
+        </node>
+        """)
+
+        self._set_reply(self.NO_REPLY)
+        self.assertEqual(self.proxy.Introspect(), None)
+        self._check_call("Interface.A", "Introspect")
+
+        self._create_proxy("""
+        <node>
+            <interface name="Interface.A">
+                <method name="Introspect" />
+            </interface>
+            <interface name="org.freedesktop.DBus.Introspectable">
+                <method name="Introspect">
+                    <arg type="s" name="xml_data" direction="out"/>
+                </method>
+            </interface>
+        </node>
+        """)
+
+        self._set_reply(self.NO_REPLY)
+        self.assertEqual(self.proxy.Introspect(), None)
+        self._check_call("Interface.A", "Introspect")

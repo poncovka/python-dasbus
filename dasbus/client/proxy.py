@@ -23,7 +23,7 @@ from threading import Lock
 
 from dasbus.client.handler import ClientObjectHandler
 from dasbus.client.property import PropertyProxy
-from dasbus.specification import DBusSpecificationError
+from dasbus.specification import DBusSpecificationError, DBusSpecification
 
 __all__ = [
     "AbstractObjectProxy",
@@ -204,15 +204,22 @@ class ObjectProxy(AbstractObjectProxy):
     def _get_interface(self, member_name):
         """Get the DBus interface of the member.
 
-        The members of standard interfaces have a priority.
+        Members of standard interfaces have the lowest priority.
         """
         if self._interface_names is None:
-            members = reversed(
-                self._handler.specification.members
+            # Sort members by their priority. Move members
+            # of standard interfaces to the end of the list.
+            members = sorted(
+                self._handler.specification.members,
+                key=DBusSpecification.is_standard_member
             )
+
+            # Add members in reverse order. Lower priority
+            # members will be overwritten by higher priority
+            # members.
             self._interface_names = {
                 m.name: m.interface_name
-                for m in members
+                for m in reversed(members)
             }
 
         try:

@@ -145,6 +145,11 @@ class DBusSpecification(object):
             )
         )
 
+    @staticmethod
+    def is_standard_member(member):
+        """Is it a member of a standard interface?"""
+        return member.interface_name.startswith("org.freedesktop.DBus.")
+
 
 class DBusSpecificationParser(object):
     """Class for parsing DBus XML specification."""
