@@ -4,8 +4,9 @@
 from dasbus.loop import EventLoop
 from dasbus.server.interface import dbus_interface
 from dasbus.typing import Str
-from common import HELLO_WORLD, SESSION_BUS
 from dasbus.xml import XMLGenerator
+
+from examples.hello_world import HELLO_WORLD, SESSION_BUS
 
 
 @dbus_interface(HELLO_WORLD.interface_name)

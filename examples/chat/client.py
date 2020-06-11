@@ -1,7 +1,7 @@
 #
 # Send a message to the chat room.
 #
-from common import CHAT
+from examples.chat import CHAT
 
 if __name__ == "__main__":
     # Create a proxy of the object /org/example/Chat

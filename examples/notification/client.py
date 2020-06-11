@@ -1,7 +1,7 @@
 #
 # Send a notification to the notification server.
 #
-from common import NOTIFICATIONS
+from examples.notification import NOTIFICATIONS
 
 if __name__ == "__main__":
     # Create a proxy of the object /org/freedesktop/Notifications

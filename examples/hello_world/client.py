@@ -2,7 +2,7 @@
 # Say hello to the world.
 # Start the server and run the client.
 #
-from common import HELLO_WORLD
+from examples.hello_world import HELLO_WORLD
 
 if __name__ == "__main__":
     # Create a proxy of the object /org/example/HelloWorld

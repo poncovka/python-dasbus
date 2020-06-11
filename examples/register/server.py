@@ -8,7 +8,8 @@ from dasbus.server.template import InterfaceTemplate
 from dasbus.signal import Signal
 from dasbus.typing import Structure, List
 from dasbus.xml import XMLGenerator
-from common import SESSION_BUS, REGISTER, User, InvalidUser
+
+from examples.register import SESSION_BUS, REGISTER, User, InvalidUser
 
 
 @dbus_interface(REGISTER.interface_name)

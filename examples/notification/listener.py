@@ -3,7 +3,8 @@
 # Start the listener, run the client and close a notification.
 #
 from dasbus.loop import EventLoop
-from common import NOTIFICATIONS
+
+from examples.notification import NOTIFICATIONS
 
 
 def callback(notification_id, reason):

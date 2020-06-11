@@ -3,7 +3,8 @@
 # Start the server, start the listener and run the client.
 #
 from dasbus.loop import EventLoop
-from common import CHAT
+
+from examples.chat import CHAT
 
 
 def callback(proxy, msg):

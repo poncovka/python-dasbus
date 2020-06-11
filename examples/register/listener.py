@@ -3,7 +3,8 @@
 # Start the server, start the listener and run the client.
 #
 from dasbus.loop import EventLoop
-from common import REGISTER
+
+from examples.register import REGISTER
 
 
 def callback(interface, changed_properties, invalid_properties):

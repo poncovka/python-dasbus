@@ -2,7 +2,7 @@
 # Register the user Alice.
 # Start the server and run the client twice.
 #
-from common import REGISTER, User, InvalidUser
+from examples.register import REGISTER, User, InvalidUser
 
 if __name__ == "__main__":
     # Create a proxy of the object /org/example/Register

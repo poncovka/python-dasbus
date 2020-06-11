@@ -8,7 +8,8 @@ from dasbus.server.template import InterfaceTemplate
 from dasbus.signal import Signal
 from dasbus.typing import Str, ObjPath
 from dasbus.xml import XMLGenerator
-from common import SESSION_BUS, CHAT, ROOM, ROOM_CONTAINER
+
+from examples.chat import SESSION_BUS, CHAT, ROOM, ROOM_CONTAINER
 
 
 @dbus_interface(ROOM.interface_name)
