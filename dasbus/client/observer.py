@@ -31,15 +31,9 @@ from gi.repository import Gio
 log = logging.getLogger(__name__)
 
 __all__ = [
-    "DBusObserverError",
     "DBusObserver",
     "GLibMonitoring"
 ]
-
-
-class DBusObserverError(Exception):
-    """Exception class for the DBus observers."""
-    pass
 
 
 class GLibMonitoring(object):
